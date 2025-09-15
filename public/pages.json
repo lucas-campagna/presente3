@@ -1,0 +1,22 @@
+{
+  "home": {
+    "title": "Olá, estas são as suas turmas",
+    "menu": ["add", "sort", "filter", "search", "report"]
+  },
+  "student": {
+    "title": "Alunos",
+    "menu": ["add", "remove", "sort", "search"]
+  },
+  "share": {
+    "title": "Compartilhamentos",
+    "menu": ["add", "remove", "sort", "search"]
+  },
+  "datetime": {
+    "title": "Tempo e data da aula",
+    "menu": ["add", "remove"]
+  },
+  "presence": {
+    "title": "Presenças da turma",
+    "menu": ["add", "remove", "sort", "search"]
+  }
+}
