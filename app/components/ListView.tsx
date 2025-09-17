@@ -1,33 +1,18 @@
 import { Separator } from "~/components/ui/separator";
 import { Skeleton } from "./ui/skeleton";
 import type React from "react";
-import {
-  ArrowDownAZ,
-  ArrowDownZA,
-  ArrowLeft,
-  BookPlus,
-  EllipsisVertical,
-  FolderSearch,
-  SearchCheck,
-  Shredder,
-  SquarePlus,
-  UserPlus,
-  UserSearch,
-  UserX,
-  X,
-} from "lucide-react";
+import { EllipsisVertical, Shredder, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { memo, useMemo, useState } from "react";
 import { Input } from "./ui/input";
 import type { MenuItemProps } from "./MenuItem";
 import MenuItem from "./MenuItem";
+import BaseDialog from "./BaseDialog";
 
 type ItemType = {
   id: string;
   label: string;
   checked?: boolean;
-  onClick?: () => void;
-  onEllipsisClick?: () => void;
   children?: () => React.ReactNode;
 };
 
@@ -35,21 +20,21 @@ function ListView({
   title,
   menu,
   items,
-  onRemove,
-  onSearch,
   onSort = (a: ItemType, b: ItemType) => a.label.localeCompare(b.label),
   onMenuClick,
+  onItemClick,
+  onItemOptionsClick,
 }: {
   title?: string;
   menu: MenuItemProps["type"][];
   items: ItemType[];
-  onRemove?: (indexes: number[]) => void;
-  onSearch?: (searchText: string) => ItemType["id"][];
   onSort?: (a: ItemType, b: ItemType) => number;
   onMenuClick?: (type: string) => void;
+  onItemClick?: (item: ItemType) => void;
+  onItemOptionsClick?: (item: ItemType) => void;
 }) {
   const [searchText, setSearchText] = useState<string>();
-  const [removingItems, setRemovingItems] = useState<undefined | number[]>();
+  const [removingItems, setRemovingItems] = useState<undefined | string[]>();
   // const { open } = useDialog();
 
   const orderedItems = useMemo(() => {
@@ -88,12 +73,20 @@ function ListView({
     onMenuClick?.(type);
   }
 
-  function handleAddItemToDelete(index: number) {
-    if (!isDeleting) return;
-    if (removingItems.includes(index)) {
-      setRemovingItems(removingItems.filter((i) => i !== index));
+  function handleItemClick(item: ItemType) {
+    if (isDeleting) {
+      handlePushItemToRemoveList(item.id);
     } else {
-      setRemovingItems([...removingItems, index]);
+      onItemClick?.(item);
+    }
+  }
+
+  function handlePushItemToRemoveList(id: string) {
+    if (!isDeleting) return;
+    if (removingItems.includes(id)) {
+      setRemovingItems(removingItems.filter((itemId) => itemId !== id));
+    } else {
+      setRemovingItems([...removingItems, id]);
     }
   }
 
@@ -104,7 +97,6 @@ function ListView({
     //   description: "Não há como desfazer essa ação.",
     //   action: "Sim",
     //   onAction: () => {
-    //     onRemove?.(removingItems);
     //     stopDelete();
     //   },
     // });
@@ -133,17 +125,27 @@ function ListView({
                 <span>Cancelar</span>
               </div>
             </Button>
-            <Button
-              variant="destructive"
-              className=""
-              onClick={handleDeleteItens}
-              disabled={removingItems?.length === 0}
+            <BaseDialog
+              title="Remover itens"
+              description="Tem certeza que deseja remover os itens selecionados? Esta ação não pode ser desfeita."
+              cancel={
+                <Button variant="outline" className="" onClick={stopDelete}>
+                  Cancelar
+                </Button>
+              }
             >
-              <div className="flex items-center gap-2">
-                <Shredder />
-                <span>Remover</span>
-              </div>
-            </Button>
+              <Button
+                variant="destructive"
+                className=""
+                onClick={handleDeleteItens}
+                disabled={removingItems?.length === 0}
+              >
+                <div className="flex items-center gap-2">
+                  <Shredder />
+                  <span>Remover</span>
+                </div>
+              </Button>
+            </BaseDialog>
           </div>
         ) : (
           menu.map((type, index) => (
@@ -157,40 +159,30 @@ function ListView({
       </div>
       <Separator />
       <div className="flex flex-col gap-2 overflow-y-auto rounded-md pb-18">
-        {orderedItems.map(
-          (
-            { id, checked, onClick, onEllipsisClick, label, children },
-            index
-          ) => (
-            <Button
-              key={id}
-              className="flex justify-between"
-              variant={
-                isDeleting
-                  ? removingItems.includes(index)
-                    ? "default"
-                    : "outline"
-                  : checked || checked === undefined
-                    ? "default"
-                    : "outline"
-              }
-            >
-              <div
-                className="w-full flex"
-                onClick={() =>
-                  isDeleting ? handleAddItemToDelete(index) : onClick?.()
-                }
-              >
-                {children?.() ?? label}
-              </div>
-              {!isDeleting && onEllipsisClick && (
-                <span onClick={onEllipsisClick}>
-                  <EllipsisVertical />
-                </span>
-              )}
-            </Button>
-          )
-        )}
+        {orderedItems.map((item) => (
+          <Button
+            key={item.id}
+            className="flex justify-between"
+            variant={
+              isDeleting
+                ? removingItems.includes(item.id)
+                  ? "default"
+                  : "outline"
+                : item.checked || item.checked === undefined
+                  ? "default"
+                  : "outline"
+            }
+          >
+            <div className="w-full flex" onClick={() => handleItemClick(item)}>
+              {item.children?.() || item.label}
+            </div>
+            {!isDeleting && onItemOptionsClick && (
+              <span onClick={() => onItemOptionsClick(item)}>
+                <EllipsisVertical />
+              </span>
+            )}
+          </Button>
+        ))}
       </div>
     </div>
   );
