@@ -2,7 +2,7 @@ import { memo } from "react";
 import * as lucideIcons from "lucide-react";
 import type { MenuItemBaseProps } from "./types";
 
-const MenuItemBase = memo(({ onClick, icon, text }: MenuItemBaseProps) => {
+const BaseMenuItem = memo(({ onClick, icon, text }: MenuItemBaseProps) => {
   const Icon = lucideIcons[icon] as React.ElementType;
   return (
     <div
@@ -15,4 +15,4 @@ const MenuItemBase = memo(({ onClick, icon, text }: MenuItemBaseProps) => {
   );
 });
 
-export default MenuItemBase;
+export default BaseMenuItem;
