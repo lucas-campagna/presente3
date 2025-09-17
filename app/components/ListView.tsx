@@ -17,19 +17,13 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { memo, useMemo, useReducer, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { Input } from "./ui/input";
-import type { MenuType } from "./MenuItem";
+import type { MenuItemProps } from "./MenuItem";
 import MenuItem from "./MenuItem";
-// import useDialog from "~/hooks/useDialog";
-
-type TypedMenuType = {
-  type: keyof (typeof IconsMode)["default"];
-  onClick?: () => void;
-};
 
 type ItemType = {
-  key: string;
+  id: string;
   label: string;
   checked?: boolean;
   onClick?: () => void;
@@ -37,91 +31,69 @@ type ItemType = {
   children?: () => React.ReactNode;
 };
 
-const IconsMode = {
-  default: {
-    add: <SquarePlus />,
-    search: <SearchCheck />,
-    order: <ArrowDownAZ />,
-    delete: <Shredder />,
-  },
-  user: {
-    add: <UserPlus />,
-    search: <UserSearch />,
-    order: <ArrowDownAZ />,
-    delete: <UserX />,
-  },
-  class: {
-    add: <BookPlus />,
-    search: <FolderSearch />,
-    order: <ArrowDownAZ />,
-    delete: <Shredder />,
-  },
-};
-
 function ListView({
   title,
   menu,
   items,
   onRemove,
+  onSearch,
+  onSort = (a: ItemType, b: ItemType) => a.label.localeCompare(b.label),
+  onMenuClick,
 }: {
   title?: string;
-  menu: MenuType[];
+  menu: MenuItemProps["type"][];
   items: ItemType[];
   onRemove?: (indexes: number[]) => void;
+  onSearch?: (searchText: string) => ItemType["id"][];
+  onSort?: (a: ItemType, b: ItemType) => number;
+  onMenuClick?: (type: string) => void;
 }) {
   const [searchText, setSearchText] = useState<string>();
-  const [sortedAZ, setSortedAZ] = useState(true);
-  const [deleteItems, setDelteItems] = useState<undefined | number[]>();
+  const [removingItems, setRemovingItems] = useState<undefined | number[]>();
   // const { open } = useDialog();
 
   const orderedItems = useMemo(() => {
-    const sortFunc = sortedAZ
-      ? (a: ItemType, b: ItemType) =>
-          (a.label ?? "").localeCompare(b.label ?? "")
-      : (a: ItemType, b: ItemType) =>
-          (b.label ?? "").localeCompare(a.label ?? "");
-    if (searchText) {
-      const lowerCaseSearchText = searchText.toLowerCase();
-      const startsWith = items.filter((s) =>
-        s.label.toLowerCase().startsWith(lowerCaseSearchText)
+    if (!searchText) return items.sort(onSort);
+    const lowerCaseSearchText = searchText.toLowerCase();
+    const startsWith = items.filter((s) =>
+      s.label.toLowerCase().startsWith(lowerCaseSearchText)
+    );
+    const startsWithNames = startsWith.map((s) => s.label.toLowerCase());
+    const contains = items.filter((s) => {
+      const lowerCaseLabel = s.label.toLowerCase();
+      return (
+        lowerCaseLabel.includes(lowerCaseSearchText) &&
+        !startsWithNames.includes(lowerCaseLabel)
       );
-      const startsWithNames = startsWith.map((s) => s.label.toLowerCase());
-      const contains = items.filter((s) => {
-        const lowerCaseLabel = s.label.toLowerCase();
-        return (
-          lowerCaseLabel.includes(lowerCaseSearchText) &&
-          !startsWithNames.includes(lowerCaseLabel)
-        );
-      });
-      return [...startsWith, ...contains].sort(sortFunc);
-    }
-    return items.sort(sortFunc);
-  }, [items, sortedAZ, searchText]);
+    });
+    return [...startsWith, ...contains].sort(onSort);
+  }, [items, searchText]);
 
-  const isDeleting = deleteItems !== undefined;
+  const isDeleting = removingItems !== undefined;
   const isSearching = typeof searchText === "string";
-  const toggleOrder = () => setSortedAZ((v) => !v);
   const startSearch = () => setSearchText("");
   const clearSearch = () => setSearchText(undefined);
-  const startDelete = () => setDelteItems([]);
-  const stopDelete = () => setDelteItems(undefined);
+  const startRemove = () => setRemovingItems([]);
+  const stopDelete = () => setRemovingItems(undefined);
 
   const MenuOnClick: {
-    [key in MenuType["type"]]: () => void;
+    [key in MenuItemProps["type"]]?: () => void;
   } = {
-    'search': startSearch,
-    'order': toggleOrder,
-    'delete': startDelete,
+    search: startSearch,
+    remove: startRemove,
+  };
+
+  function handleMenuClick(type: MenuItemProps["type"]) {
+    MenuOnClick[type]?.();
+    onMenuClick?.(type);
   }
 
   function handleAddItemToDelete(index: number) {
-    if (isDeleting) {
-      if (deleteItems.includes(index)) {
-        setDelteItems(deleteItems.filter((i) => i !== index));
-      } else {
-        setDelteItems([...deleteItems, index]);
-      }
-      return;
+    if (!isDeleting) return;
+    if (removingItems.includes(index)) {
+      setRemovingItems(removingItems.filter((i) => i !== index));
+    } else {
+      setRemovingItems([...removingItems, index]);
     }
   }
 
@@ -132,8 +104,8 @@ function ListView({
     //   description: "Não há como desfazer essa ação.",
     //   action: "Sim",
     //   onAction: () => {
-    //     onRemove?.(deleteItems);
-    //     setDelteItems(undefined);
+    //     onRemove?.(removingItems);
+    //     stopDelete();
     //   },
     // });
   }
@@ -141,8 +113,8 @@ function ListView({
   const hasTitle = title !== undefined && !isSearching && !isDeleting;
 
   return (
-    <div className="flex flex-col justify-start items-stretch size-full gap-4 overflow-y-hide">
-      {!hasTitle ? undefined : title ? (
+    <div className="flex flex-col justify-start items-stretch size-full gap-4 overflow-y-hide p-4">
+      {!hasTitle ? null : title ? (
         <span>{title}</span>
       ) : (
         <Skeleton className="h-[24px] w-[150px] rounded-full" />
@@ -155,11 +127,7 @@ function ListView({
           />
         ) : isDeleting ? (
           <div className="flex justify-around w-full items-center gap-2">
-            <Button
-              variant="outline"
-              className=""
-              onClick={() => setDelteItems(undefined)}
-            >
+            <Button variant="outline" className="" onClick={stopDelete}>
               <div className="flex items-center gap-2">
                 <X />
                 <span>Cancelar</span>
@@ -169,7 +137,7 @@ function ListView({
               variant="destructive"
               className=""
               onClick={handleDeleteItens}
-              disabled={deleteItems?.length === 0}
+              disabled={removingItems?.length === 0}
             >
               <div className="flex items-center gap-2">
                 <Shredder />
@@ -178,11 +146,11 @@ function ListView({
             </Button>
           </div>
         ) : (
-          menu.map((item, index) => (
+          menu.map((type, index) => (
             <MenuItem
               key={index}
-              onClick={MenuOnClick[item.type]}
-              {...item}
+              onClick={() => handleMenuClick(type)}
+              type={type}
             />
           ))
         )}
@@ -191,15 +159,15 @@ function ListView({
       <div className="flex flex-col gap-2 overflow-y-auto rounded-md pb-18">
         {orderedItems.map(
           (
-            { key, checked, onClick, onEllipsisClick, label, children },
+            { id, checked, onClick, onEllipsisClick, label, children },
             index
           ) => (
             <Button
-              key={key}
+              key={id}
               className="flex justify-between"
               variant={
                 isDeleting
-                  ? deleteItems.includes(index)
+                  ? removingItems.includes(index)
                     ? "default"
                     : "outline"
                   : checked || checked === undefined

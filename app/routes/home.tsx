@@ -14,25 +14,10 @@ export function meta({}: Route.MetaArgs) {
 export default function Home() {
   return (
     <ListView
-      title={"Titulo"}
-      menu={[
-        {
-          type: "search",
-          text: "Buscar",
-          icon: 'Search',
-        },
-        {
-          type: "order",
-          text: "Ordenar",
-          icon: 'SearchCheck',
-        },
-        {
-          type: "delete",
-          text: "Deletar",
-          icon: 'Trash',
-        }
-      ]}
+      title={"Olá, estas são as suas turmas"}
+      menu={["add", "filter", "search", "archive", "report"]}
       items={[]}
+      onMenuClick={(type) => console.log(type)}
     />
   );
 }
