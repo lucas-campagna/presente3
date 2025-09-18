@@ -105,6 +105,10 @@ export function SurrealProvider({
     [surrealInstance, isPending, isSuccess, isError, error, connect, close]
   );
 
+  if (import.meta.env.DEV) {
+    (window as any).surreal = surrealInstance;
+  }
+
   return (
     <SurrealContext.Provider value={value}>{children}</SurrealContext.Provider>
   );

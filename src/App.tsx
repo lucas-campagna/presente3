@@ -8,10 +8,14 @@ const client = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={client}>
-      <SurrealProvider endpoint={"indxdb://presente"} autoConnect>
-      <Routes>
-        <Route index element={<Home />} />
-      </Routes>
+      <SurrealProvider
+        endpoint={"indxdb://presente"}
+        params={{ namespace: "presente", database: "dados" }}
+        autoConnect
+      >
+        <Routes>
+          <Route index element={<Home />} />
+        </Routes>
       </SurrealProvider>
     </QueryClientProvider>
   );
