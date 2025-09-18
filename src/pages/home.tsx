@@ -5,7 +5,7 @@ export default function Home() {
     <ListView
       title={"Olá, estas são as suas turmas"}
       menu={["add", "filter", "search", "archive", "report"]}
-      items={[]}
+      model={'class'}
       onMenuClick={(type) => console.log(type)}
     />
   );

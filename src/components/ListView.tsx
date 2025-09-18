@@ -8,18 +8,19 @@ import { Input } from "./ui/input";
 import type { MenuItemProps } from "./MenuItem";
 import MenuItem from "./MenuItem";
 import BaseDialog from "./BaseDialog";
+import useModel from "@/hooks/useModel";
+import { getLabel, type AvailableModels } from "@/models";
 
 type ItemType = {
   id: string;
   label: string;
   checked?: boolean;
-  children?: () => React.ReactNode;
 };
 
 function ListView({
   title,
   menu,
-  items,
+  model,
   onSort = (a: ItemType, b: ItemType) => a.label.localeCompare(b.label),
   onMenuClick,
   onItemClick,
@@ -27,15 +28,25 @@ function ListView({
 }: {
   title?: string;
   menu: MenuItemProps["type"][];
-  items: ItemType[];
+  model: keyof AvailableModels;
   onSort?: (a: ItemType, b: ItemType) => number;
   onMenuClick?: (type: string) => void;
   onItemClick?: (item: ItemType) => void;
   onItemOptionsClick?: (item: ItemType) => void;
 }) {
+  type ModelType = AvailableModels[typeof model];
   const [searchText, setSearchText] = useState<string>();
   const [removingItems, setRemovingItems] = useState<undefined | string[]>();
-  // const { open } = useDialog();
+  const { items: rawItems } = useModel<ModelType>(model);
+  const items = useMemo<ItemType[]>(
+    () =>
+      rawItems.map((item) => ({
+        id: item.id,
+        label: getLabel[model](item),
+        checked: false,
+      })),
+    [rawItems]
+  );
 
   const orderedItems = useMemo(() => {
     if (!searchText) return items.sort(onSort);
@@ -64,6 +75,7 @@ function ListView({
   const MenuOnClick: {
     [key in MenuItemProps["type"]]?: () => void;
   } = {
+    add: startSearch,
     search: startSearch,
     remove: startRemove,
   };
@@ -169,12 +181,12 @@ function ListView({
                   ? "default"
                   : "outline"
                 : item.checked || item.checked === undefined
-                  ? "default"
-                  : "outline"
+                ? "default"
+                : "outline"
             }
           >
             <div className="w-full flex" onClick={() => handleItemClick(item)}>
-              {item.children?.() || item.label}
+              {item.label}
             </div>
             {!isDeleting && onItemOptionsClick && (
               <span onClick={() => onItemOptionsClick(item)}>
