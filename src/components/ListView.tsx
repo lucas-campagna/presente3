@@ -1,4 +1,4 @@
-import { Separator } from "~/components/ui/separator";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "./ui/skeleton";
 import type React from "react";
 import { EllipsisVertical, Shredder, X } from "lucide-react";
