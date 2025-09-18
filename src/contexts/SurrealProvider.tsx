@@ -129,6 +129,9 @@ export function useSurreal() {
  * Access the Surreal client from the context.
  */
 export function useSurrealClient() {
-  const { client } = useSurreal();
+  const { client, isConnecting, isError, isSuccess } = useSurreal();
+  if (isConnecting || isError || !isSuccess) {
+    return null;
+  }
   return client;
 }
