@@ -1,6 +1,5 @@
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "./ui/skeleton";
-import type React from "react";
 import { EllipsisVertical, Shredder, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { memo, useMemo, useState } from "react";
@@ -10,6 +9,8 @@ import MenuItem from "./MenuItem";
 import BaseDialog from "./BaseDialog";
 import useModel from "@/hooks/useModel";
 import { getLabel, type AvailableModels } from "@/models";
+import useDialog from "@/hooks/useDialog";
+import ClassForm from "@/components/forms/Class";
 
 type ItemType = {
   id: string;
@@ -37,7 +38,7 @@ function ListView({
   type ModelType = AvailableModels[typeof model];
   const [searchText, setSearchText] = useState<string>();
   const [removingItems, setRemovingItems] = useState<undefined | string[]>();
-  const { items: rawItems } = useModel<ModelType>(model);
+  const { items: rawItems, create } = useModel<ModelType>(model);
   const items = useMemo<ItemType[]>(
     () =>
       rawItems.map((item) => ({
@@ -47,6 +48,7 @@ function ListView({
       })),
     [rawItems]
   );
+  const { open } = useDialog();
 
   const orderedItems = useMemo(() => {
     if (!searchText) return items.sort(onSort);
@@ -75,7 +77,13 @@ function ListView({
   const MenuOnClick: {
     [key in MenuItemProps["type"]]?: () => void;
   } = {
-    add: startSearch,
+    add: () => {
+      open({
+        title: "Novo",
+        content: <ClassForm onSubmit={console.log} defaultValues={{}} />,
+      });
+      // create();
+    },
     search: startSearch,
     remove: startRemove,
   };
