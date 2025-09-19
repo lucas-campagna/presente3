@@ -9,32 +9,31 @@ import {
 import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 
-function Dialog({
-  open,
-  title,
-  description,
-  action,
-  inputs,
-  cancel,
-  onAction,
-  onCancel,
-  onBlur,
-  initialState,
-}: {
+export type DialogProps = {
   open: boolean;
   title: string;
   description: string;
-  inputs?: (props: {
-    state: any;
-    setState: React.Dispatch<any>;
-  }) => React.ReactNode;
+  content?: React.ReactNode;
   action?: string | null;
   cancel?: string;
   onAction?: (_?: any) => void;
   onCancel?: () => void;
   onBlur?: (_: any) => void;
   initialState?: any;
-}) {
+};
+
+function Dialog({
+  open,
+  title,
+  description,
+  action,
+  content,
+  cancel,
+  onAction,
+  onCancel,
+  onBlur,
+  initialState,
+}: DialogProps) {
   const [state, setState] = useState<any>(initialState);
   useEffect(() => setState(initialState), [initialState]);
   const hasHeader = title || description;
@@ -42,16 +41,16 @@ function Dialog({
   return (
     <DialogBase open={open}>
       <DialogContent onInteractOutside={onBlur}>
-        <DialogHeader className={hasHeader ? "" : "hidden"}>
-          <DialogTitle className={title ? undefined : "hidden"}>
-            {title}
-          </DialogTitle>
-          <DialogDescription className={description ? undefined : "hidden"}>
-            {description}
-          </DialogDescription>
-        </DialogHeader>
-        {initialState && state && inputs?.({ state, setState })}
-        {hasFooter && (
+        {hasHeader && (
+          <DialogHeader>
+            {title && <DialogTitle>{title}</DialogTitle>}
+            {description && (
+              <DialogDescription>{description}</DialogDescription>
+            )}
+          </DialogHeader>
+        )}
+        {content}
+        {/* {hasFooter && (
           <DialogFooter>
             {action !== null && (
               <Button onClick={() => onAction?.(state)}>
@@ -64,7 +63,7 @@ function Dialog({
               </Button>
             )}
           </DialogFooter>
-        )}
+        )} */}
       </DialogContent>
     </DialogBase>
   );

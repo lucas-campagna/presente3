@@ -1,15 +1,14 @@
-import Dialog from "@/components/dialog";
+import Dialog, { type DialogProps } from "@/components/Dialog";
 import React, { createContext, useState } from "react";
 
-type PartialDialogProps = Partial<React.ComponentProps<typeof Dialog>>;
 const defaultDialog = {
-  open: (_?: PartialDialogProps) => {},
+  open: (_: Partial<DialogProps>) => {},
   close: () => {},
 };
 export const DialogContext = createContext(defaultDialog);
 
 function DialogProvider({ children }: { children: React.ReactNode }) {
-  const [dialogProps, setDialogProps] = useState<PartialDialogProps>();
+  const [dialogProps, setDialogProps] = useState<Partial<DialogProps>>();
 
   function close() {
     setDialogProps({ open: false });

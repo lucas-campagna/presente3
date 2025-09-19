@@ -7,6 +7,7 @@ import Attendance from "./pages/attendance";
 import { SurrealProvider } from "./contexts/SurrealProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router";
+import DialogProvider from "./contexts/DialogProvider";
 
 const client = new QueryClient();
 
@@ -19,10 +20,12 @@ createRoot(document.getElementById("root")!).render(
           params={{ namespace: "presente", database: "dados" }}
           autoConnect
         >
-          <Routes>
-            <Route index element={<Home />} />
-            <Route path="/attendance/:className" element={<Attendance />} />
-          </Routes>
+          <DialogProvider>
+            <Routes>
+              <Route index element={<Home />} />
+              <Route path="/attendance/:className" element={<Attendance />} />
+            </Routes>
+          </DialogProvider>
         </SurrealProvider>
       </QueryClientProvider>
     </BrowserRouter>
