@@ -5,4 +5,5 @@ export const allowedItems = {
   report: { text: "Relatório", icon: "FileText" },
   filter: { text: "Filtrar", icon: "Funnel" },
   archive: { text: "Arquivar", icon: "ArchiveX" },
+  settings: { text: "Configurações", icon: "Settings" },
 };
