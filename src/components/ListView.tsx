@@ -167,7 +167,7 @@ function ListView({
               </Button>
             </BaseDialog>
           </div>
-        ) : (
+        ) : menu.length < 6 ? (
           menu.map((type, index) => (
             <MenuItem
               key={index}
@@ -175,6 +175,16 @@ function ListView({
               type={type}
             />
           ))
+        ) : (
+          <div className="flex flex-row justify-start gap-6 overflow-x-scroll scrollbar-hidden px-3">
+            {menu.map((type, index) => (
+              <MenuItem
+                key={index}
+                onClick={() => handleMenuClick(type)}
+                type={type}
+              />
+            ))}
+          </div>
         )}
       </div>
       <Separator />
