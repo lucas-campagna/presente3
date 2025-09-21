@@ -136,6 +136,7 @@ function ListView({
           <SearchInput
             text={searchText}
             onChange={(text) => setSearchText(text)}
+            onClose={clearSearch}
           />
         ) : isDeleting ? (
           <div className="flex justify-around w-full items-center gap-2">
@@ -222,9 +223,11 @@ const SearchInput = memo(
   ({
     text,
     onChange,
+    onClose,
   }: {
-    text?: string;
-    onChange?: (text?: string) => void;
+    text: string;
+    onChange: (text?: string) => void;
+    onClose: () => void;
   }) => (
     <div className="flex items-center w-full gap-2">
       <Input
@@ -233,7 +236,7 @@ const SearchInput = memo(
         value={text}
         onChange={(e: any) => onChange?.(e.target.value)}
       />
-      <div onClick={() => onChange?.(undefined)}>
+      <div onClick={onClose}>
         <X />
       </div>
     </div>
