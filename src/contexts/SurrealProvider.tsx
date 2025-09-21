@@ -1,4 +1,4 @@
-import { Surreal } from "surrealdb";
+import { RecordId, Surreal } from "surrealdb";
 import { useMutation } from "@tanstack/react-query";
 import React, {
   createContext,
@@ -107,6 +107,7 @@ export function SurrealProvider({
 
   if (import.meta.env.DEV) {
     (window as any).surreal = surrealInstance;
+    (window as any).RecordId = RecordId;
   }
 
   return (
