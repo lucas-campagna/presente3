@@ -1,5 +1,4 @@
-import type { Class } from "./class";
-import { getLabel as getLabelClass, onSort as onSortClass } from "./class";
+import type { ClassRoom } from "./classRoom";
 
 export type AvailableModels = {
     class: Class;

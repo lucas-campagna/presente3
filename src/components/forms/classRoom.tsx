@@ -16,8 +16,8 @@ import {
 } from "@/components/ui/form";
 
 const FormSchema = z.object({
-  name: z.string().nonempty().default(""),
-  active: z.boolean().default(true).optional(),
+  name: z.string().nonempty(),
+  active: z.boolean(),
 });
 
 type FormValues = z.infer<typeof FormSchema>;
@@ -27,14 +27,14 @@ export type ClassFormProps = {
   defaultValues?: Partial<FormValues>;
 };
 
-const NameSujestions = ["História II", "Matemática", "Maternal 3", "Português"];
+const NameSuggestions = ["História II", "Matemática", "Maternal 3", "Português"];
 const getPlaceholder = () =>
-  NameSujestions[Math.floor(NameSujestions.length * Math.random())];
+  NameSuggestions[Math.floor(NameSuggestions.length * Math.random())];
 
-const ClassForm: React.FC<ClassFormProps> = ({
+const ClassForm = ({
   onSubmit,
   defaultValues = { name: "", active: true },
-}) => {
+}: ClassFormProps) => {
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
     defaultValues,
