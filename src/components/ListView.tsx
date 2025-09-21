@@ -48,7 +48,7 @@ function ListView({
       })),
     [rawItems]
   );
-  const { open } = useDialog();
+  const { open, close } = useDialog();
 
   const orderedItems = useMemo(() => {
     if (!searchText)
@@ -77,15 +77,21 @@ function ListView({
   const startRemove = () => setRemovingItems([]);
   const stopDelete = () => setRemovingItems(undefined);
 
+  function handleAddItem(data: any) {
+    insert(data);
+    close();
+  }
+
   const MenuOnClick: {
     [key in MenuItemProps["type"]]?: () => void;
   } = {
     add: () => {
+      const Form = modelForms[model];
+      if (!Form) return;
       open({
         title: "Novo",
-        content: <ClassForm onSubmit={console.log} defaultValues={{}} />,
+        content: <Form onSubmit={handleAddItem} />,
       });
-      // create();
     },
     search: startSearch,
     remove: startRemove,
