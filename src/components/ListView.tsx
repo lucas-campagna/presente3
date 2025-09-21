@@ -8,15 +8,15 @@ import type { MenuItemProps } from "./MenuItem";
 import MenuItem from "./MenuItem";
 import BaseDialog from "./BaseDialog";
 import useModel from "@/hooks/useModel";
-import { getLabel, type AvailableModels } from "@/models";
+import { type AvailableModels } from "@/models";
+import * as models from "@/models";
 import useDialog from "@/hooks/useDialog";
-import ClassForm from "@/components/forms/Class";
+import modelForms from "./forms";
 
-type ItemType = {
-  id: string;
+type ItemListType = {
   label: string;
   checked?: boolean;
-};
+} & AvailableModels[keyof AvailableModels];
 
 function ListView({
   title,
@@ -32,18 +32,18 @@ function ListView({
   model: keyof AvailableModels;
   onSort?: (a: ItemType, b: ItemType) => number;
   onMenuClick?: (type: string) => void;
-  onItemClick?: (item: ItemType) => void;
-  onItemOptionsClick?: (item: ItemType) => void;
+  onItemClick?: (item: ItemListType) => void;
+  onItemOptionsClick?: (item: ItemListType) => void;
 }) {
-  type ModelType = AvailableModels[typeof model];
+  type T = AvailableModels[typeof model];
   const [searchText, setSearchText] = useState<string>();
   const [removingItems, setRemovingItems] = useState<undefined | string[]>();
-  const { items: rawItems, create } = useModel<ModelType>(model);
-  const items = useMemo<ItemType[]>(
+  const { items: rawItems, insert } = useModel<T>(model);
+  const items = useMemo<ItemListType[]>(
     () =>
       rawItems.map((item) => ({
-        id: item.id,
-        label: getLabel[model](item),
+        ...item,
+        label: getLabel(item as any),
         checked: false,
       })),
     [rawItems]
@@ -51,7 +51,8 @@ function ListView({
   const { open } = useDialog();
 
   const orderedItems = useMemo(() => {
-    if (!searchText) return items.sort(onSort);
+    if (!searchText)
+      return items.sort(onSort as (a: ItemListType, b: ItemListType) => number);
     const lowerCaseSearchText = searchText.toLowerCase();
     const startsWith = items.filter((s) =>
       s.label.toLowerCase().startsWith(lowerCaseSearchText)
@@ -64,7 +65,9 @@ function ListView({
         !startsWithNames.includes(lowerCaseLabel)
       );
     });
-    return [...startsWith, ...contains].sort(onSort);
+    return [...startsWith, ...contains].sort(
+      onSort as (a: ItemListType, b: ItemListType) => number
+    );
   }, [items, searchText]);
 
   const isDeleting = removingItems !== undefined;
@@ -93,15 +96,16 @@ function ListView({
     onMenuClick?.(type);
   }
 
-  function handleItemClick(item: ItemType) {
+  function handleItemClick(item: ItemListType) {
     if (isDeleting) {
-      handlePushItemToRemoveList(item.id);
+      handlePushItemToRemoveList(item);
     } else {
       onItemClick?.(item);
     }
   }
 
-  function handlePushItemToRemoveList(id: string) {
+  function handlePushItemToRemoveList(item: ItemListType) {
+    const id = item.id.id as string;
     if (!isDeleting) return;
     if (removingItems.includes(id)) {
       setRemovingItems(removingItems.filter((itemId) => itemId !== id));
@@ -192,11 +196,11 @@ function ListView({
       <div className="flex flex-col gap-2 overflow-y-auto rounded-md pb-18">
         {orderedItems.map((item) => (
           <Button
-            key={item.id}
+            key={item.id.id as string}
             className="flex justify-between"
             variant={
               isDeleting
-                ? removingItems.includes(item.id)
+                ? removingItems.includes(item.id.id as string)
                   ? "default"
                   : "outline"
                 : item.checked || item.checked === undefined
