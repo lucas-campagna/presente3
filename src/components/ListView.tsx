@@ -197,7 +197,7 @@ function ListView({
         {orderedItems.map((item) => (
           <Button
             key={item.id.id as string}
-            className="flex justify-between"
+            className="flex justify-between p-5"
             variant={
               isDeleting
                 ? removingItems.includes(item.id.id as string)
