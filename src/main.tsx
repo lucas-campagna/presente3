@@ -23,7 +23,7 @@ createRoot(document.getElementById("root")!).render(
           <DialogProvider>
             <Routes>
               <Route index element={<Home />} />
-              <Route path="/attendance/:className" element={<Attendance />} />
+              <Route path="/attendance/:id" element={<Attendance />} />
             </Routes>
           </DialogProvider>
         </SurrealProvider>
