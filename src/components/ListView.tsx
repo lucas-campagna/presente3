@@ -22,7 +22,6 @@ function ListView({
   title,
   menu,
   model,
-  onSort = (a: ItemType, b: ItemType) => a.label.localeCompare(b.label),
   onMenuClick,
   onItemClick,
   onItemOptionsClick,
@@ -30,12 +29,12 @@ function ListView({
   title?: string;
   menu: MenuItemProps["type"][];
   model: keyof AvailableModels;
-  onSort?: (a: ItemType, b: ItemType) => number;
   onMenuClick?: (type: string) => void;
   onItemClick?: (item: ItemListType) => void;
   onItemOptionsClick?: (item: ItemListType) => void;
 }) {
   type T = AvailableModels[typeof model];
+  const { onSort, getLabel } = models[model];
   const [searchText, setSearchText] = useState<string>();
   const [removingItems, setRemovingItems] = useState<undefined | string[]>();
   const { items: rawItems, insert } = useModel<T>(model);
