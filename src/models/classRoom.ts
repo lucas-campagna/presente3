@@ -5,11 +5,3 @@ export type ClassRoom = {
   name: string;
   active: boolean;
 };
-
-export function getLabel(item: ClassRoom) {
-  return item.name;
-}
-
-export function onSort(a: ClassRoom, b: ClassRoom) {
-  return a.name.localeCompare(b.name);
-}
