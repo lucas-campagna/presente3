@@ -7,51 +7,37 @@ import { Input } from "./ui/input";
 import type { MenuItemProps } from "./MenuItem";
 import MenuItem from "./MenuItem";
 import BaseDialog from "./BaseDialog";
-import useModel from "@/hooks/useModel";
 import { type AvailableModels } from "@/models";
-import * as models from "@/models";
-import useDialog from "@/hooks/useDialog";
-import modelForms from "./forms";
 
 type ItemListType = {
   label: string;
   checked?: boolean;
 } & AvailableModels[keyof AvailableModels];
 
+const onSort = (a: ItemListType, b: ItemListType) =>
+  a.label.localeCompare(b.label);
+
 function ListView({
   title,
   menu,
-  model,
+  items,
   onMenuClick,
   onItemClick,
   onItemOptionsClick,
 }: {
   title?: string;
   menu: MenuItemProps["type"][];
-  model: keyof AvailableModels;
+  items: ItemListType[];
   onMenuClick?: (type: string) => void;
   onItemClick?: (item: ItemListType) => void;
   onItemOptionsClick?: (item: ItemListType) => void;
 }) {
-  type T = AvailableModels[typeof model];
-  const { onSort, getLabel } = models[model];
   const [searchText, setSearchText] = useState<string>();
   const [removingItems, setRemovingItems] = useState<undefined | string[]>();
-  const { items: rawItems, insert } = useModel<T>(model);
-  const items = useMemo<ItemListType[]>(
-    () =>
-      rawItems.map((item) => ({
-        ...item,
-        label: getLabel(item as any),
-        checked: false,
-      })),
-    [rawItems]
-  );
-  const { open, close } = useDialog();
+  // const { open, close } = useDialog();
 
   const orderedItems = useMemo(() => {
-    if (!searchText)
-      return items.sort(onSort as (a: ItemListType, b: ItemListType) => number);
+    if (!searchText) return items.sort(onSort);
     const lowerCaseSearchText = searchText.toLowerCase();
     const startsWith = items.filter((s) =>
       s.label.toLowerCase().startsWith(lowerCaseSearchText)
@@ -76,22 +62,22 @@ function ListView({
   const startRemove = () => setRemovingItems([]);
   const stopDelete = () => setRemovingItems(undefined);
 
-  function handleAddItem(data: any) {
-    insert(data);
-    close();
-  }
+  // function handleAddItem(data: ItemListType) {
+  //   onInsert?.(data);
+  //   close();
+  // }
 
   const MenuOnClick: {
     [key in MenuItemProps["type"]]?: () => void;
   } = {
-    add: () => {
-      const Form = modelForms[model];
-      if (!Form) return;
-      open({
-        title: "Novo",
-        content: <Form onSubmit={handleAddItem} />,
-      });
-    },
+    // add: () => {
+    //   const Form = modelForms[model];
+    //   if (!Form) return;
+    //   open({
+    //     title: "Novo",
+    //     content: <Form onSubmit={handleAddItem} />,
+    //   });
+    // },
     search: startSearch,
     remove: startRemove,
   };
@@ -121,6 +107,7 @@ function ListView({
 
   function handleDeleteItens() {
     if (!isDeleting) return;
+    // onDeleteItems?.(removingItems);
     // open({
     //   title: "Tem certeza?",
     //   description: "Não há como desfazer essa ação.",
@@ -208,7 +195,7 @@ function ListView({
                 ? removingItems.includes(item.id.id as string)
                   ? "default"
                   : "outline"
-                : item.checked || item.checked === undefined
+                : item.checked === true
                 ? "default"
                 : "outline"
             }
